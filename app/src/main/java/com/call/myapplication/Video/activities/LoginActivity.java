@@ -93,6 +93,7 @@ public class LoginActivity extends BaseActivity {
     private void startSignUpNewUser(final QBUser newUser) {
         Log.d(TAG, "SignUp New User");
         showProgressDialog(R.string.dlg_creating_new_user);
+
         requestExecutor.signUpNewUser(newUser, new QBEntityCallback<QBUser>() {
                     @Override
                     public void onSuccess(QBUser result, Bundle params) {

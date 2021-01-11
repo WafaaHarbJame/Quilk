@@ -69,16 +69,11 @@ import java.util.Map;
 
 import androidx.fragment.app.Fragment;
 
-/**
- * QuickBlox team
- */
-public class CallActivity extends BaseActivity implements IncomeCallFragmentCallbackListener,
-        QBRTCSessionStateCallback<QBRTCSession>, QBRTCClientSessionCallbacks, ConversationFragmentCallback, ScreenShareFragment.OnSharingEvents {
-    private static final String TAG = CallActivity.class.getSimpleName();
 
+public class CallActivity extends BaseActivity implements IncomeCallFragmentCallbackListener, QBRTCSessionStateCallback<QBRTCSession>, QBRTCClientSessionCallbacks, ConversationFragmentCallback, ScreenShareFragment.OnSharingEvents {
     public static final String INCOME_CALL_FRAGMENT = "income_call_fragment";
     public static final int REQUEST_PERMISSION_SETTING = 545;
-
+    private static final String TAG = CallActivity.class.getSimpleName();
     private ArrayList<CurrentCallStateCallback> currentCallStateCallbackList = new ArrayList<>();
     private QbUsersDbManager dbManager = QbUsersDbManager.getInstance(this);
     private Handler showIncomingCallWindowTaskHandler;
@@ -344,9 +339,10 @@ public class CallActivity extends BaseActivity implements IncomeCallFragmentCall
 
     @Override
     public void finish() {
-        //Fix bug when user returns to call from service and the backstack doesn't have any screens
+
         CallService.stop(this);
         OpponentsActivity.start(this);
+
         super.finish();
     }
 
@@ -366,11 +362,7 @@ public class CallActivity extends BaseActivity implements IncomeCallFragmentCall
     }
 
     private void addConversationFragment(boolean isIncomingCall) {
-        BaseConversationFragment conversationFragment = BaseConversationFragment.newInstance(
-                isVideoCall
-                        ? new VideoConversationFragment()
-                        : new AudioConversationFragment(),
-                isIncomingCall);
+        BaseConversationFragment conversationFragment = BaseConversationFragment.newInstance(isVideoCall ? new VideoConversationFragment() : new AudioConversationFragment(), isIncomingCall);
         FragmentExecuotr.addFragment(getSupportFragmentManager(), R.id.fragment_container, conversationFragment, conversationFragment.getClass().getSimpleName());
     }
 
@@ -389,19 +381,6 @@ public class CallActivity extends BaseActivity implements IncomeCallFragmentCall
                 }
             }
         });
-    }
-
-    ////////////////////////////// ConnectionListener //////////////////////////////
-    private class ConnectionListenerImpl extends AbstractConnectionListener {
-        @Override
-        public void connectionClosedOnError(Exception e) {
-            showNotificationPopUp(R.string.connection_was_lost, true);
-        }
-
-        @Override
-        public void reconnectionSuccessful() {
-            showNotificationPopUp(R.string.connection_was_lost, false);
-        }
     }
 
     ////////////////////////////// QBRTCSessionStateCallbackListener ///////////////////////////
@@ -469,7 +448,6 @@ public class CallActivity extends BaseActivity implements IncomeCallFragmentCall
     public void onReceiveNewSession(final QBRTCSession session) {
         Log.d(TAG, "Session " + session.getSessionID() + " Received");
     }
-
 
     @Override
     public void onUserNoActions(QBRTCSession qbrtcSession, Integer integer) {
@@ -665,7 +643,6 @@ public class CallActivity extends BaseActivity implements IncomeCallFragmentCall
         addConversationFragment(false);
     }
 
-
     private void notifyCallStateListenersCallStarted() {
         for (CurrentCallStateCallback callback : currentCallStateCallbackList) {
             callback.onCallStarted();
@@ -687,6 +664,34 @@ public class CallActivity extends BaseActivity implements IncomeCallFragmentCall
     private void notifyCallStateListenersCallTime(String callTime) {
         for (CurrentCallStateCallback callback : currentCallStateCallbackList) {
             callback.onCallTimeUpdate(callTime);
+        }
+    }
+
+    public interface OnChangeAudioDevice {
+        void audioDeviceChanged(AppRTCAudioManager.AudioDevice newAudioDevice);
+    }
+
+    public interface CurrentCallStateCallback {
+
+        void onCallStarted();
+
+        void onCallStopped();
+
+        void onOpponentsListUpdated(ArrayList<QBUser> newUsers);
+
+        void onCallTimeUpdate(String time);
+    }
+
+    ////////////////////////////// ConnectionListener //////////////////////////////
+    private class ConnectionListenerImpl extends AbstractConnectionListener {
+        @Override
+        public void connectionClosedOnError(Exception e) {
+            showNotificationPopUp(R.string.connection_was_lost, true);
+        }
+
+        @Override
+        public void reconnectionSuccessful() {
+            showNotificationPopUp(R.string.connection_was_lost, false);
         }
     }
 
@@ -730,20 +735,5 @@ public class CallActivity extends BaseActivity implements IncomeCallFragmentCall
                 }
             });
         }
-    }
-
-    public interface OnChangeAudioDevice {
-        void audioDeviceChanged(AppRTCAudioManager.AudioDevice newAudioDevice);
-    }
-
-
-    public interface CurrentCallStateCallback {
-        void onCallStarted();
-
-        void onCallStopped();
-
-        void onOpponentsListUpdated(ArrayList<QBUser> newUsers);
-
-        void onCallTimeUpdate(String time);
     }
 }

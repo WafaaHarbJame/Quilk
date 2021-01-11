@@ -5,11 +5,14 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -71,12 +74,13 @@ import androidx.core.app.NotificationCompat;
 import static com.call.myapplication.Video.utils.Consts.MAX_OPPONENTS_COUNT;
 
 
-public class CallService extends Service {
+public class CallService extends Service  {
     private static final String TAG = CallService.class.getSimpleName();
 
     private static final int SERVICE_ID = 787;
     private static final String CHANNEL_ID = "Quickblox channel";
     private static final String CHANNEL_NAME = "Quickblox background service";
+    public boolean isSessionRunning;
 
     private HashMap<Integer, QBRTCVideoTrack> videoTrackMap = new HashMap<>();
     private CallServiceBinder callServiceBinder = new CallServiceBinder();
@@ -100,9 +104,16 @@ public class CallService extends Service {
     private Timer callTimer = new Timer();
     private Long callTime;
 
+
+
     public static void start(Context context) {
         Intent intent = new Intent(context, CallService.class);
-        context.startService(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context. startForegroundService(intent);
+        } else {
+            context.startService(intent);
+        }
+
     }
 
     public static void stop(Context context) {
@@ -126,7 +137,7 @@ public class CallService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Notification notification = initNotification();
         startForeground(SERVICE_ID, notification);
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     @Override
@@ -143,10 +154,14 @@ public class CallService extends Service {
         clearButtonsState();
         clearCallState();
         stopForeground(true);
+
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
         if (notificationManager != null) {
             notificationManager.cancelAll();
         }
+
+
     }
 
     @Nullable
@@ -336,6 +351,7 @@ public class CallService extends Service {
         if (currentSession != null) {
             currentSession.removeSessionCallbacksListener(callback);
         }
+
     }
 
     public void addVideoTrackListener(QBRTCClientVideoTracksCallbacks callback) {
@@ -671,9 +687,18 @@ public class CallService extends Service {
         @Override
         public void onReceiveNewSession(QBRTCSession session) {
             Log.d(TAG, "Session " + session.getSessionID() + " are Income");
-            if (WebRtcSessionManager.getInstance(getApplicationContext()).getCurrentSession() != null) {
+
+            if (WebRtcSessionManager.getInstance(getApplicationContext()).getCurrentSession() == null) {
+                Log.d(TAG, "Start new session");
+                Intent i = new Intent(getApplicationContext(), CallActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(i);
+            } else {
+                Log.d(TAG, "Log Stop new session. Device now is busy");
                 session.rejectCall(null);
             }
+
+
         }
 
         @Override
@@ -809,4 +834,14 @@ public class CallService extends Service {
     public interface CallTimerListener {
         void onCallTimeUpdate(String time);
     }
+
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Intent restartServiceIntent = new Intent(getApplicationContext(), this.getClass());
+        restartServiceIntent.setPackage(getPackageName());
+        super.onTaskRemoved(rootIntent);
+    }
+
+
 }

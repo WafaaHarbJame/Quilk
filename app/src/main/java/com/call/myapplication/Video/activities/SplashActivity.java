@@ -46,6 +46,8 @@ public class SplashActivity extends BaseActivity {
             getSupportActionBar().hide();
         }
 
+       // runNextScreen();
+
         if (checkOverlayPermissions()) {
             runNextScreen();
         }

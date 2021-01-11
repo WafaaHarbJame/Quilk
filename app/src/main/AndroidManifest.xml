@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.call.myapplication">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -11,42 +12,52 @@
     <uses-permission android:name="com.quickblox.sample.messages.permission.C2D_MESSAGE" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <application
+        android:name=".Video.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:name=".Video.App"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <receiver
+            android:name=".Video.MyReceiver"
+            android:enabled="true"
+            android:exported="true"/>
+        <receiver
+            android:name=".Video.services.MyReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
         <activity
             android:name=".Video.activities.SplashActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".Video.activities.LoginActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".Video.activities.OpponentsActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" />
-
-        <activity android:name=".Video.activities.PermissionsActivity"
+        <activity
+            android:name=".Video.activities.PermissionsActivity"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".Video.activities.CallActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
@@ -54,26 +65,25 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/BaseAppTheme" />
-
         <activity
             android:name=".Video.activities.SettingsActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".Video.activities.AppInfoActivity"
             android:screenOrientation="portrait" />
 
         <service android:name=".Video.services.LoginService" />
-
-        <service android:name=".Video.services.CallService" />
-
+        <service
+            android:name=".Video.services.CallService"
+            android:enabled="true"
+            android:exported="false"
+            android:stopWithTask="false" />
         <service android:name=".Video.services.fcm.PushListenerService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
         <service android:name="com.quickblox.messages.services.fcm.QBFcmPushInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
@@ -83,19 +93,15 @@
         <meta-data
             android:name="com.quickblox.messages.TYPE"
             android:value="GCM" />
-
         <meta-data
             android:name="com.quickblox.messages.SENDER_ID"
             android:value="@string/sender_id" />
-
         <meta-data
             android:name="com.quickblox.messages.QB_ENVIRONMENT"
             android:value="DEVELOPMENT" />
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="4b96a3f33893a42103eae91d2166d0c517b833d3" />

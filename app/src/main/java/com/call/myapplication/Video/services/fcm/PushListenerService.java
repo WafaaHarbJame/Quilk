@@ -30,5 +30,10 @@ public class PushListenerService extends QBFcmPushListenerService {
         super.sendPushMessage(data, from, message);
         Log.v(TAG, "From: " + from);
         Log.v(TAG, "Message: " + message);
+        if (SharedPrefsHelper.getInstance().hasQbUser()) {
+            QBUser qbUser=SharedPrefsHelper.getInstance().getQbUser();
+            Log.v(TAG, "App has logged user" + qbUser.getId());
+            LoginService.start(this, qbUser);
+        }
     }
 }

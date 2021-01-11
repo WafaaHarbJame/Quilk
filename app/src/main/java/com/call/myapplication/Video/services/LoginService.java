@@ -102,7 +102,7 @@ public class LoginService extends Service {
         if (currentCommand == COMMAND_LOGIN) {
             startLoginToChat();
         } else if (currentCommand == COMMAND_LOGOUT) {
-            logout();
+           // logout();
         }
     }
 
@@ -239,7 +239,7 @@ public class LoginService extends Service {
         Log.d(TAG, "Service onTaskRemoved()");
         super.onTaskRemoved(rootIntent);
         if (!isCallServiceRunning()) {
-            logout();
+           // logout();
         }
     }
 
